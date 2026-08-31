@@ -1,168 +1,224 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Dua Sisi Coffee & Eatery — Kasir</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Dua Sisi - Kasir</title>
+  <link rel="manifest" href="manifest.json"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#fff8f6",
+            "surface-variant": "#e8e1df",
+            "on-background": "#1d1b1a",
+            "on-primary": "#ffffff",
+            "surface": "#fff8f6",
+            "surface-container": "#f3ecea",
+            "on-surface": "#1d1b1a",
+            "surface-container-highest": "#e8e1df",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f9f2f0",
+            "surface-container-high": "#eee7e5",
+            "primary": "#25160e",
+            "primary-container": "#3c2a21",
+            "on-primary-container": "#aa9084",
+            "secondary": "#645f3c",
+            "on-surface-variant": "#4f4540",
+            "outline": "#81756f",
+            "outline-variant": "#d3c3bd",
+            "error": "#ba1a1a"
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .toggle-checkbox:checked { right: 0; border-color: #3C2A21; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #3C2A21; }
+  </style>
 </head>
-<body>
+<body class="bg-background text-on-background font-sans antialiased min-h-screen flex flex-col pt-[132px] pb-[90px]">
 
-  <header class="app-header">
-    <div class="header-top">
-      <div class="brand">
-        <span class="brand-icon">🌿</span>
-        <div class="brand-text">
-          <h1>Dua Sisi</h1>
-          <p>Coffee & Eatery</p>
-        </div>
+  <!-- TopAppBar -->
+  <header class="fixed top-0 w-full z-40 bg-surface border-b border-outline-variant px-4 pt-3 pb-3 flex flex-col gap-2">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2 text-primary">
+        <span class="material-symbols-outlined text-[24px]">signal_cellular_alt</span>
+        <h1 class="text-xl font-bold text-primary">Dua Sisi</h1>
       </div>
-      <span id="statusBadge" class="status-badge online">
-        <span class="status-dot"></span> Online
-      </span>
+      <button id="cashierBadge" class="bg-surface-container-high px-3 py-1 rounded-full flex items-center gap-2 border border-outline-variant cursor-pointer active:scale-95 transition-transform">
+        <div class="w-2 h-2 rounded-full bg-secondary"></div>
+        <span id="cashierText" class="text-xs font-semibold text-on-surface">K-1</span>
+      </button>
     </div>
 
-    <div class="search-wrap">
-      <input type="text" id="searchInput" placeholder="Cari menu, mis. Aren Latte..." autocomplete="off">
-    </div>
-
-    <div class="category-chips" id="categoryChips">
-      <button class="chip active" data-cat="Semua">Semua</button>
-      <button class="chip" data-cat="Ice Black">🧊 Ice Black</button>
-      <button class="chip" data-cat="Milk Based">🥛 Milk Based</button>
-      <button class="chip" data-cat="Non-Coffee">🍵 Non-Coffee</button>
-      <button class="chip" data-cat="Brewed Coffee">☕ Brewed Coffee</button>
-      <button class="chip" data-cat="Signature">⭐ Signature</button>
+    <!-- Search & Chips -->
+    <div id="headerSearchArea">
+      <div class="relative w-full h-[42px] mb-2">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+        <input id="searchInput" type="text" placeholder="Cari menu Dua Sisi..." class="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface text-sm focus:outline-none focus:ring-1 focus:ring-primary"/>
+      </div>
+      <div id="categoryChips" class="flex overflow-x-auto gap-2 no-scrollbar">
+        <button class="chip active whitespace-nowrap px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-semibold" data-cat="Semua">Semua</button>
+        <button class="chip whitespace-nowrap px-4 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface text-xs font-semibold" data-cat="Ice Black">Ice Black</button>
+        <button class="chip whitespace-nowrap px-4 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface text-xs font-semibold" data-cat="Milk Based">Milk Based</button>
+        <button class="chip whitespace-nowrap px-4 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface text-xs font-semibold" data-cat="Non-Coffee">Non-Coffee</button>
+        <button class="chip whitespace-nowrap px-4 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface text-xs font-semibold" data-cat="Brewed Coffee">Brewed Coffee</button>
+        <button class="chip whitespace-nowrap px-4 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface text-xs font-semibold" data-cat="Signature">Signature</button>
+      </div>
     </div>
   </header>
 
-  <main class="app-main">
+  <!-- MAIN PANELS -->
+  <main class="flex-1 px-4 py-3">
+
     <!-- TAB KASIR -->
-    <section id="tab-kasir" class="tab-panel active">
-      <div id="productGrid" class="product-grid"></div>
-      <p id="emptyProducts" class="empty-state" hidden>Menu tidak ditemukan.</p>
+    <section id="tab-kasir" class="tab-panel">
+      <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+      <p id="emptyProducts" class="text-center text-on-surface-variant text-sm py-8" hidden>Menu tidak ditemukan.</p>
 
-      <div id="checkoutCard" class="checkout-card collapsed">
-        <button id="checkoutToggle" class="checkout-toggle" type="button">
-          <div class="checkout-toggle-info">
-            <span class="checkout-toggle-count" id="cartCount">0 item</span>
-            <span class="checkout-toggle-total" id="cartMiniTotal">Rp 0</span>
+      <!-- Drawer Pesanan -->
+      <div id="checkoutCard" class="fixed bottom-[72px] md:bottom-0 left-0 w-full md:w-96 md:right-0 md:left-auto bg-surface-container-lowest shadow-[0_-4px_16px_rgba(37,22,14,0.15)] rounded-t-2xl md:rounded-none z-30 border-t border-outline-variant flex flex-col transition-all duration-300">
+        <div id="checkoutToggle" class="px-4 py-3 flex items-center justify-between cursor-pointer border-b border-outline-variant">
+          <div class="flex flex-col">
+            <span id="cartCount" class="text-xs text-on-surface-variant">0 item</span>
+            <span id="cartMiniTotal" class="text-base font-bold text-on-surface">Rp 0</span>
           </div>
-          <span class="checkout-toggle-arrow">▲</span>
-        </button>
+          <div class="flex items-center gap-1 text-primary font-semibold text-sm">
+            <span>Lihat Pesanan</span>
+            <span id="drawerArrow" class="material-symbols-outlined transition-transform">keyboard_arrow_up</span>
+          </div>
+        </div>
 
-        <div class="checkout-body">
-          <h2 class="checkout-title">Keranjang</h2>
-          <div id="cartList" class="cart-list">
-            <p class="empty-state small">Belum ada menu dipilih.</p>
+        <div id="checkoutBody" class="hidden flex-col p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+          <div class="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-lg border border-outline-variant">
+            <span class="material-symbols-outlined text-outline">person</span>
+            <input id="customerNameInput" type="text" placeholder="Nama Pelanggan / Meja" class="w-full bg-transparent text-sm text-on-surface focus:outline-none border-none p-0"/>
           </div>
 
-          <div class="checkout-summary">
-            <div class="summary-row">
-              <span>Total Belanja</span>
-              <strong id="cartTotal">Rp 0</strong>
+          <div id="cartList" class="space-y-3 my-2"></div>
+
+          <div class="bg-surface p-3 rounded-lg border border-outline-variant space-y-2 text-sm">
+            <div class="flex justify-between font-bold text-base">
+              <span>Total</span>
+              <span id="cartTotal">Rp 0</span>
             </div>
-            <label class="field-label" for="paidInput">Uang Dibayar (Rp)</label>
-            <input type="number" id="paidInput" inputmode="numeric" placeholder="0" min="0">
-            <div class="summary-row change-row">
+            <div class="space-y-1 pt-1">
+              <label class="text-xs font-semibold text-on-surface-variant">Uang Dibayar (Rp)</label>
+              <input id="paidInput" type="number" placeholder="0" class="w-full bg-surface-container-lowest border border-outline-variant rounded p-2 text-sm focus:ring-primary focus:border-primary"/>
+            </div>
+            <div class="flex justify-between font-semibold pt-1">
               <span>Kembalian</span>
-              <strong id="changeAmount">Rp 0</strong>
+              <span id="changeAmount" class="text-primary">Rp 0</span>
             </div>
           </div>
 
-          <button id="finishTransactionBtn" class="btn-primary" disabled>
+          <button id="finishTransactionBtn" class="w-full bg-primary text-on-primary font-bold py-3.5 rounded-lg shadow disabled:opacity-50 transition-colors" disabled>
             Selesaikan Transaksi
           </button>
         </div>
       </div>
     </section>
 
-    <!-- TAB MENU -->
-    <section id="tab-menu" class="tab-panel">
-      <div class="panel-header">
-        <h2>Kelola Menu</h2>
-        <p class="panel-sub">Tambah & hapus menu di database kasir.</p>
-      </div>
-
-      <form id="menuForm" class="card form-card">
-        <label class="field-label" for="menuName">Nama Menu</label>
-        <input type="text" id="menuName" placeholder="mis. Kopi Susu Gula Aren" required>
-
-        <label class="field-label" for="menuCategory">Kategori</label>
-        <select id="menuCategory" required>
-          <option value="Ice Black">🧊 Ice Black</option>
-          <option value="Milk Based">🥛 Milk Based</option>
-          <option value="Non-Coffee">🍵 Non-Coffee</option>
-          <option value="Brewed Coffee">☕ Brewed Coffee</option>
-          <option value="Signature">⭐ Signature</option>
-        </select>
-
-        <label class="field-label" for="menuPrice">Harga Jual (Rp)</label>
-        <input type="number" id="menuPrice" inputmode="numeric" placeholder="0" min="0" required>
-
-        <button type="submit" class="btn-primary">+ Tambah Menu</button>
+    <!-- TAB KELOLA MENU -->
+    <section id="tab-menu" class="tab-panel hidden">
+      <form id="menuForm" class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-4 space-y-3 shadow-sm">
+        <h2 class="font-bold text-base text-on-surface">Tambah Menu Baru</h2>
+        <div>
+          <label class="text-xs font-semibold text-on-surface-variant">Nama Menu</label>
+          <input id="menuName" type="text" placeholder="mis. Aren Latte" class="w-full border border-outline-variant rounded-lg p-2 text-sm mt-1" required/>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-on-surface-variant">Kategori</label>
+            <select id="menuCategory" class="w-full border border-outline-variant rounded-lg p-2 text-sm mt-1">
+              <option value="Ice Black">Ice Black</option>
+              <option value="Milk Based">Milk Based</option>
+              <option value="Non-Coffee">Non-Coffee</option>
+              <option value="Brewed Coffee">Brewed Coffee</option>
+              <option value="Signature">Signature</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-on-surface-variant">Harga (Rp)</label>
+            <input id="menuPrice" type="number" placeholder="18000" class="w-full border border-outline-variant rounded-lg p-2 text-sm mt-1" required/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-on-surface-variant">URL Foto Produk</label>
+          <input id="menuImage" type="url" placeholder="https://..." class="w-full border border-outline-variant rounded-lg p-2 text-sm mt-1"/>
+        </div>
+        <button type="submit" class="w-full bg-primary text-on-primary font-bold py-2.5 rounded-lg text-sm shadow">
+          + Simpan Menu
+        </button>
       </form>
 
-      <div class="panel-header" style="margin-top:16px;">
-        <h3>Daftar Menu (<span id="menuTotalCount">0</span>)</h3>
-      </div>
-      <div id="menuTable" class="menu-table"></div>
+      <h3 class="font-bold text-sm text-on-surface mb-2">Daftar Menu (<span id="menuTotalCount">0</span>)</h3>
+      <div id="menuTable" class="space-y-2"></div>
     </section>
 
     <!-- TAB LAPORAN -->
-    <section id="tab-laporan" class="tab-panel">
-      <div class="panel-header">
-        <h2>Analisis Penjualan</h2>
-        <p class="panel-sub">Ringkasan performa toko Dua Sisi.</p>
-      </div>
-
-      <div class="stats-grid">
-        <div class="card stat-card">
-          <span class="stat-label">Total Omset</span>
-          <span class="stat-value" id="statOmset">Rp 0</span>
+    <section id="tab-laporan" class="tab-panel hidden space-y-4">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-surface-container-lowest border border-outline-variant p-3 rounded-lg text-center">
+          <span class="text-[10px] uppercase font-semibold text-on-surface-variant">Omset</span>
+          <div id="statOmset" class="text-xs font-bold text-primary mt-1">Rp 0</div>
         </div>
-        <div class="card stat-card">
-          <span class="stat-label">Transaksi</span>
-          <span class="stat-value" id="statTrx">0</span>
+        <div class="bg-surface-container-lowest border border-outline-variant p-3 rounded-lg text-center">
+          <span class="text-[10px] uppercase font-semibold text-on-surface-variant">Transaksi</span>
+          <div id="statTrx" class="text-sm font-bold text-on-surface mt-1">0</div>
         </div>
-        <div class="card stat-card">
-          <span class="stat-label">Item Terjual</span>
-          <span class="stat-value" id="statItems">0</span>
+        <div class="bg-surface-container-lowest border border-outline-variant p-3 rounded-lg text-center">
+          <span class="text-[10px] uppercase font-semibold text-on-surface-variant">Terjual</span>
+          <div id="statItems" class="text-sm font-bold text-on-surface mt-1">0</div>
         </div>
       </div>
 
-      <div class="panel-header">
-        <h3>Menu Terlaris</h3>
+      <div>
+        <h2 class="font-bold text-sm text-on-surface mb-2">Analisis Terlaris</h2>
+        <div id="bestSellerList" class="flex overflow-x-auto gap-3 no-scrollbar pb-2"></div>
       </div>
-      <div id="bestSellerList" class="bestseller-list"></div>
 
-      <div class="panel-header" style="margin-top:16px;">
-        <h3>Riwayat Transaksi</h3>
+      <div>
+        <h2 class="font-bold text-sm text-on-surface mb-2">Riwayat Pesanan</h2>
+        <div id="historyList" class="space-y-3"></div>
       </div>
-      <div id="historyList" class="history-list"></div>
     </section>
+
   </main>
 
-  <nav class="bottom-nav">
-    <button class="nav-btn active" data-tab="tab-kasir">
-      <span class="nav-icon">🛒</span>
-      <span class="nav-label">Kasir</span>
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 w-full z-40 bg-surface border-t border-outline-variant flex justify-around items-center h-[68px] px-2">
+    <button class="nav-btn active flex flex-col items-center justify-center text-primary px-4 py-1 rounded-full" data-tab="tab-kasir">
+      <span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+      <span class="text-[11px] font-semibold mt-0.5">Kasir</span>
     </button>
-    <button class="nav-btn" data-tab="tab-menu">
-      <span class="nav-icon">☕</span>
-      <span class="nav-label">Menu</span>
+    <button class="nav-btn flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 rounded-full" data-tab="tab-menu">
+      <span class="material-symbols-outlined text-[20px]">restaurant_menu</span>
+      <span class="text-[11px] font-semibold mt-0.5">Menu</span>
     </button>
-    <button class="nav-btn" data-tab="tab-laporan">
-      <span class="nav-icon">📊</span>
-      <span class="nav-label">Laporan</span>
+    <button class="nav-btn flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 rounded-full" data-tab="tab-laporan">
+      <span class="material-symbols-outlined text-[20px]">analytics</span>
+      <span class="text-[11px] font-semibold mt-0.5">Laporan</span>
     </button>
   </nav>
 
-  <div id="toast" class="toast"></div>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-semibold shadow-lg hidden z-50"></div>
 
   <script src="app.js"></script>
 </body>
