@@ -2,12 +2,9 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Dua Sisi Coffee & Eatery — Kasir</title>
-  <meta name="description" content="Aplikasi kasir offline Dua Sisi Coffee & Eatery">
-  <meta name="theme-color" content="#1C3829">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -30,7 +27,6 @@
     </div>
 
     <div class="search-wrap">
-      <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="Cari menu, mis. Aren Latte..." autocomplete="off">
     </div>
 
@@ -45,10 +41,10 @@
   </header>
 
   <main class="app-main">
+    <!-- TAB KASIR -->
     <section id="tab-kasir" class="tab-panel active">
       <div id="productGrid" class="product-grid"></div>
       <p id="emptyProducts" class="empty-state" hidden>Menu tidak ditemukan.</p>
-      <div class="cart-spacer"></div>
 
       <div id="checkoutCard" class="checkout-card collapsed">
         <button id="checkoutToggle" class="checkout-toggle" type="button">
@@ -56,10 +52,10 @@
             <span class="checkout-toggle-count" id="cartCount">0 item</span>
             <span class="checkout-toggle-total" id="cartMiniTotal">Rp 0</span>
           </div>
-          <span class="checkout-toggle-arrow" id="checkoutArrow">▲</span>
+          <span class="checkout-toggle-arrow">▲</span>
         </button>
 
-        <div class="checkout-body" id="checkoutBody">
+        <div class="checkout-body">
           <h2 class="checkout-title">Keranjang</h2>
           <div id="cartList" class="cart-list">
             <p class="empty-state small">Belum ada menu dipilih.</p>
@@ -74,21 +70,22 @@
             <input type="number" id="paidInput" inputmode="numeric" placeholder="0" min="0">
             <div class="summary-row change-row">
               <span>Kembalian</span>
-              <strong id="changeAmount" class="change-value">Rp 0</strong>
+              <strong id="changeAmount">Rp 0</strong>
             </div>
           </div>
 
-          <button id="finishTransactionBtn" class="btn-primary btn-block" disabled>
+          <button id="finishTransactionBtn" class="btn-primary" disabled>
             Selesaikan Transaksi
           </button>
         </div>
       </div>
     </section>
 
+    <!-- TAB MENU -->
     <section id="tab-menu" class="tab-panel">
       <div class="panel-header">
         <h2>Kelola Menu</h2>
-        <p class="panel-sub">Tambah dan hapus menu Dua Sisi POS.</p>
+        <p class="panel-sub">Tambah & hapus menu di database kasir.</p>
       </div>
 
       <form id="menuForm" class="card form-card">
@@ -107,15 +104,16 @@
         <label class="field-label" for="menuPrice">Harga Jual (Rp)</label>
         <input type="number" id="menuPrice" inputmode="numeric" placeholder="0" min="0" required>
 
-        <button type="submit" class="btn-primary btn-block">+ Tambah Menu</button>
+        <button type="submit" class="btn-primary">+ Tambah Menu</button>
       </form>
 
-      <div class="panel-header">
+      <div class="panel-header" style="margin-top:16px;">
         <h3>Daftar Menu (<span id="menuTotalCount">0</span>)</h3>
       </div>
       <div id="menuTable" class="menu-table"></div>
     </section>
 
+    <!-- TAB LAPORAN -->
     <section id="tab-laporan" class="tab-panel">
       <div class="panel-header">
         <h2>Analisis Penjualan</h2>
@@ -128,7 +126,7 @@
           <span class="stat-value" id="statOmset">Rp 0</span>
         </div>
         <div class="card stat-card">
-          <span class="stat-label">Jumlah Transaksi</span>
+          <span class="stat-label">Transaksi</span>
           <span class="stat-value" id="statTrx">0</span>
         </div>
         <div class="card stat-card">
@@ -138,6 +136,11 @@
       </div>
 
       <div class="panel-header">
+        <h3>Menu Terlaris</h3>
+      </div>
+      <div id="bestSellerList" class="bestseller-list"></div>
+
+      <div class="panel-header" style="margin-top:16px;">
         <h3>Riwayat Transaksi</h3>
       </div>
       <div id="historyList" class="history-list"></div>

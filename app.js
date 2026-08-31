@@ -1,6 +1,6 @@
 /* =========================================================
    DUA SISI COFFEE & EATERY — POS PWA
-   app.js — IndexedDB + UI logic (no external framework)
+   app.js — IndexedDB + Synchronized UI Layout
    ========================================================= */
 
 (() => {
@@ -60,8 +60,8 @@
      STATE
   --------------------------------------------------------- */
   let db = null;
-  let allMenu = [];          // cache of menu items from IndexedDB
-  let cart = [];              // [{id, name, category, price, qty}]
+  let allMenu = [];
+  let cart = [];
   let activeCategory = 'Semua';
   let searchTerm = '';
 
@@ -78,10 +78,11 @@
 
   function showToast(message) {
     const toast = $('#toast');
+    if (!toast) return;
     toast.textContent = message;
-    toast.classList.add('show');
+    toast.style.display = 'block';
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+    showToast._t = setTimeout(() => { toast.style.display = 'none'; }, 2200);
   }
 
   function formatDateTime(iso) {
@@ -90,6 +91,12 @@
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   /* ---------------------------------------------------------
@@ -175,36 +182,35 @@
   function renderProducts() {
     const grid = $('#productGrid');
     const empty = $('#emptyProducts');
-    const filtered = getFilteredMenu();
+    if (!grid) return;
 
+    const filtered = getFilteredMenu();
     grid.innerHTML = '';
 
     if (filtered.length === 0) {
-      empty.hidden = false;
+      if (empty) empty.hidden = false;
       return;
     }
-    empty.hidden = true;
+    if (empty) empty.hidden = true;
 
     const frag = document.createDocumentFragment();
     filtered.forEach((item) => {
       const card = document.createElement('div');
-      card.className = 'product-card';
+      card.className = 'card product-card';
       card.innerHTML = `
-        <div class="cat-icon">${CATEGORY_ICON[item.category] || '🍽️'}</div>
-        <p class="p-name">${escapeHtml(item.name)}</p>
-        <span class="p-tag">${escapeHtml(item.category)}</span>
-        <div class="p-price">${formatRupiah(item.price)}</div>
-        <button class="add-btn" data-id="${item.id}" aria-label="Tambah ${escapeHtml(item.name)}">+</button>
+        <div class="product-info">
+          <div class="product-icon">${CATEGORY_ICON[item.category] || '☕'}</div>
+          <div class="product-title">${escapeHtml(item.name)}</div>
+          <div class="product-cat">${escapeHtml(item.category)}</div>
+        </div>
+        <div class="product-footer">
+          <span class="product-price">${formatRupiah(item.price)}</span>
+          <button class="btn-add add-btn" data-id="${item.id}" aria-label="Tambah ${escapeHtml(item.name)}">+</button>
+        </div>
       `;
       frag.appendChild(card);
     });
     grid.appendChild(frag);
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
   }
 
   /* ---------------------------------------------------------
@@ -222,10 +228,6 @@
     }
     renderCart();
     showToast(`${item.name} ditambahkan`);
-
-    if (cart.length === 1) {
-      $('#checkoutCard').classList.remove('collapsed');
-    }
   }
 
   function changeQty(menuId, delta) {
@@ -250,26 +252,28 @@
     const list = $('#cartList');
     const total = cartTotal();
 
-    $('#cartCount').textContent = `${cartItemCount()} item`;
-    $('#cartMiniTotal').textContent = formatRupiah(total);
-    $('#cartTotal').textContent = formatRupiah(total);
+    if ($('#cartCount')) $('#cartCount').textContent = `${cartItemCount()} item`;
+    if ($('#cartMiniTotal')) $('#cartMiniTotal').textContent = formatRupiah(total);
+    if ($('#cartTotal')) $('#cartTotal').textContent = formatRupiah(total);
 
-    if (cart.length === 0) {
-      list.innerHTML = '<p class="empty-state small">Belum ada menu dipilih.</p>';
-    } else {
-      list.innerHTML = cart.map((c) => `
-        <div class="cart-item">
-          <div class="cart-item-info">
-            <div class="cart-item-name">${escapeHtml(c.name)}</div>
-            <div class="cart-item-price">${formatRupiah(c.price)} x ${c.qty}</div>
+    if (list) {
+      if (cart.length === 0) {
+        list.innerHTML = '<p class="empty-state small">Belum ada menu dipilih.</p>';
+      } else {
+        list.innerHTML = cart.map((c) => `
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <div class="cart-item-name">${escapeHtml(c.name)}</div>
+              <div class="cart-item-price">${formatRupiah(c.price)} x ${c.qty}</div>
+            </div>
+            <div class="qty-control" style="display:flex; gap:6px; align-items:center;">
+              <button class="qty-btn minus" data-id="${c.id}" data-delta="-1" style="padding:2px 8px; border-radius:4px; border:1px solid #ccc;">−</button>
+              <span class="qty-value">${c.qty}</span>
+              <button class="qty-btn plus" data-id="${c.id}" data-delta="1" style="padding:2px 8px; border-radius:4px; border:1px solid #ccc;">+</button>
+            </div>
           </div>
-          <div class="qty-control">
-            <button class="qty-btn minus" data-id="${c.id}" data-delta="-1" aria-label="Kurangi">−</button>
-            <span class="qty-value">${c.qty}</span>
-            <button class="qty-btn plus" data-id="${c.id}" data-delta="1" aria-label="Tambah">+</button>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
 
     recalcChange();
@@ -277,25 +281,24 @@
 
   function recalcChange() {
     const total = cartTotal();
-    const paid = Number($('#paidInput').value) || 0;
+    const paidInput = $('#paidInput');
+    const paid = paidInput ? (Number(paidInput.value) || 0) : 0;
     const change = paid - total;
     const changeEl = $('#changeAmount');
     const finishBtn = $('#finishTransactionBtn');
 
-    changeEl.textContent = formatRupiah(Math.abs(change));
-    if (change < 0) {
-      changeEl.classList.add('negative');
-    } else {
-      changeEl.classList.remove('negative');
+    if (changeEl) {
+      changeEl.textContent = formatRupiah(Math.max(0, change));
     }
 
     const canFinish = cart.length > 0 && paid >= total && total > 0;
-    finishBtn.disabled = !canFinish;
+    if (finishBtn) finishBtn.disabled = !canFinish;
   }
 
   async function finishTransaction() {
     const total = cartTotal();
-    const paid = Number($('#paidInput').value) || 0;
+    const paidInput = $('#paidInput');
+    const paid = paidInput ? (Number(paidInput.value) || 0) : 0;
     if (cart.length === 0 || paid < total) return;
 
     const record = {
@@ -309,9 +312,9 @@
     try {
       await idbAdd(STORE_TRX, record);
       cart = [];
-      $('#paidInput').value = '';
+      if (paidInput) paidInput.value = '';
       renderCart();
-      $('#checkoutCard').classList.add('collapsed');
+      if ($('#checkoutCard')) $('#checkoutCard').classList.remove('expanded');
       showToast('Transaksi berhasil disimpan ✓');
       await refreshReportIfVisible();
     } catch (err) {
@@ -330,7 +333,8 @@
 
   function renderMenuTable() {
     const container = $('#menuTable');
-    $('#menuTotalCount').textContent = allMenu.length;
+    if (!container) return;
+    if ($('#menuTotalCount')) $('#menuTotalCount').textContent = allMenu.length;
 
     if (allMenu.length === 0) {
       container.innerHTML = '<p class="empty-state">Belum ada menu tersimpan.</p>';
@@ -338,23 +342,21 @@
     }
 
     container.innerHTML = allMenu.map((item) => `
-      <div class="menu-row">
-        <div class="cat-icon">${CATEGORY_ICON[item.category] || '🍽️'}</div>
-        <div class="menu-row-info">
-          <div class="menu-row-name">${escapeHtml(item.name)}</div>
-          <div class="menu-row-meta">${escapeHtml(item.category)}</div>
+      <div class="card" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>${escapeHtml(item.name)}</strong> (${escapeHtml(item.category)})
+          <div style="font-size:12px; color:var(--primary);">${formatRupiah(item.price)}</div>
         </div>
-        <div class="menu-row-price">${formatRupiah(item.price)}</div>
-        <button class="delete-btn" data-id="${item.id}" aria-label="Hapus ${escapeHtml(item.name)}">🗑️</button>
+        <button class="delete-btn" data-id="${item.id}" style="background:#E63946; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Hapus</button>
       </div>
     `).join('');
   }
 
   async function handleAddMenu(e) {
     e.preventDefault();
-    const name = $('#menuName').value.trim();
-    const category = $('#menuCategory').value;
-    const price = Number($('#menuPrice').value);
+    const name = $('#menuName')?.value.trim();
+    const category = $('#menuCategory')?.value;
+    const price = Number($('#menuPrice')?.value);
 
     if (!name || !price || price <= 0) {
       showToast('Lengkapi data menu dengan benar');
@@ -400,60 +402,33 @@
       (sum, t) => sum + t.items.reduce((s, i) => s + i.qty, 0), 0
     );
 
-    $('#statOmset').textContent = formatRupiah(totalOmset);
-    $('#statTrx').textContent = totalTrx;
-    $('#statItems').textContent = totalItems;
-
-    // Best sellers
-    const salesMap = {};
-    transactions.forEach((t) => {
-      t.items.forEach((i) => {
-        if (!salesMap[i.name]) salesMap[i.name] = { name: i.name, category: i.category, qty: 0 };
-        salesMap[i.name].qty += i.qty;
-      });
-    });
-    const bestSellers = Object.values(salesMap).sort((a, b) => b.qty - a.qty).slice(0, 5);
-
-    const bestSellerEl = $('#bestSellerList');
-    if (bestSellers.length === 0) {
-      bestSellerEl.innerHTML = '<p class="empty-state">Belum ada penjualan.</p>';
-    } else {
-      bestSellerEl.innerHTML = bestSellers.map((b, idx) => `
-        <div class="bestseller-row">
-          <div class="bestseller-rank">${idx + 1}</div>
-          <div class="bestseller-info">
-            <div class="bestseller-name">${escapeHtml(b.name)}</div>
-            <div class="bestseller-sold">${b.qty} terjual</div>
-          </div>
-        </div>
-      `).join('');
-    }
+    if ($('#statOmset')) $('#statOmset').textContent = formatRupiah(totalOmset);
+    if ($('#statTrx')) $('#statTrx').textContent = totalTrx;
+    if ($('#statItems')) $('#statItems').textContent = totalItems;
 
     // History
     const historyEl = $('#historyList');
-    if (transactions.length === 0) {
-      historyEl.innerHTML = '<p class="empty-state">Belum ada riwayat transaksi.</p>';
-    } else {
-      historyEl.innerHTML = transactions.map((t) => `
-        <div class="history-card">
-          <div class="history-top">
-            <span class="history-time">${formatDateTime(t.datetime)}</span>
-            <span class="history-total">${formatRupiah(t.total)}</span>
+    if (historyEl) {
+      if (transactions.length === 0) {
+        historyEl.innerHTML = '<p class="empty-state">Belum ada riwayat transaksi.</p>';
+      } else {
+        historyEl.innerHTML = transactions.map((t) => `
+          <div class="card" style="margin-bottom:8px; font-size:12px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <strong>#TRX-${t.id.toString().slice(-4)}</strong>
+              <span>${formatDateTime(t.datetime)}</span>
+            </div>
+            <div>Items: ${t.items.map((i) => `${escapeHtml(i.name)} x${i.qty}`).join(', ')}</div>
+            <div style="margin-top:4px;">Total: <strong>${formatRupiah(t.total)}</strong></div>
           </div>
-          <div class="history-items">
-            ${t.items.map((i) => `${escapeHtml(i.name)} x${i.qty}`).join(', ')}
-          </div>
-          <div class="history-foot">
-            <span>Dibayar: ${formatRupiah(t.paid)}</span>
-            <span>Kembali: ${formatRupiah(t.change)}</span>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
   }
 
   async function refreshReportIfVisible() {
-    if ($('#tab-laporan').classList.contains('active')) {
+    const tab = $('#tab-laporan');
+    if (tab && tab.classList.contains('active')) {
       await renderReport();
     }
   }
@@ -466,6 +441,7 @@
     $$('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tabId));
 
     if (tabId === 'tab-laporan') renderReport();
+    if (tabId === 'tab-menu') renderMenuTable();
   }
 
   /* ---------------------------------------------------------
@@ -473,6 +449,7 @@
   --------------------------------------------------------- */
   function updateOnlineStatus() {
     const badge = $('#statusBadge');
+    if (!badge) return;
     if (navigator.onLine) {
       badge.classList.remove('offline');
       badge.classList.add('online');
@@ -489,54 +466,73 @@
   --------------------------------------------------------- */
   function bindEvents() {
     // Search
-    $('#searchInput').addEventListener('input', (e) => {
-      searchTerm = e.target.value;
-      renderProducts();
-    });
+    if ($('#searchInput')) {
+      $('#searchInput').addEventListener('input', (e) => {
+        searchTerm = e.target.value;
+        renderProducts();
+      });
+    }
 
     // Category chips
-    $('#categoryChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip');
-      if (!chip) return;
-      activeCategory = chip.dataset.cat;
-      $$('.chip').forEach((c) => c.classList.toggle('active', c === chip));
-      renderProducts();
-    });
+    if ($('#categoryChips')) {
+      $('#categoryChips').addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        activeCategory = chip.dataset.cat;
+        $$('.chip').forEach((c) => c.classList.toggle('active', c === chip));
+        renderProducts();
+      });
+    }
 
     // Add to cart (delegated)
-    $('#productGrid').addEventListener('click', (e) => {
-      const btn = e.target.closest('.add-btn');
-      if (!btn) return;
-      addToCart(Number(btn.dataset.id));
-    });
+    if ($('#productGrid')) {
+      $('#productGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('.add-btn');
+        if (!btn) return;
+        addToCart(Number(btn.dataset.id));
+      });
+    }
 
     // Cart qty controls (delegated)
-    $('#cartList').addEventListener('click', (e) => {
-      const btn = e.target.closest('.qty-btn');
-      if (!btn) return;
-      changeQty(Number(btn.dataset.id), Number(btn.dataset.delta));
-    });
+    if ($('#cartList')) {
+      $('#cartList').addEventListener('click', (e) => {
+        const btn = e.target.closest('.qty-btn');
+        if (!btn) return;
+        changeQty(Number(btn.dataset.id), Number(btn.dataset.delta));
+      });
+    }
 
     // Paid input
-    $('#paidInput').addEventListener('input', recalcChange);
+    if ($('#paidInput')) {
+      $('#paidInput').addEventListener('input', recalcChange);
+    }
 
     // Finish transaction
-    $('#finishTransactionBtn').addEventListener('click', finishTransaction);
+    if ($('#finishTransactionBtn')) {
+      $('#finishTransactionBtn').addEventListener('click', finishTransaction);
+    }
 
     // Checkout collapse toggle
-    $('#checkoutToggle').addEventListener('click', () => {
-      $('#checkoutCard').classList.toggle('collapsed');
-    });
+    if ($('#checkoutToggle')) {
+      $('#checkoutToggle').addEventListener('click', () => {
+        const card = $('#checkoutCard');
+        if (card) card.classList.toggle('expanded');
+      });
+    }
 
     // Menu form
-    $('#menuForm').addEventListener('submit', handleAddMenu);
+    if ($('#menuForm')) {
+      $('#menuForm').addEventListener('submit', handleAddMenu);
+    }
 
     // Delete menu (delegated)
-    $('#menuTable').addEventListener('click', (e) => {
-      const btn = e.target.closest('.delete-btn');
-      if (!btn) return;
-      handleDeleteMenu(Number(btn.dataset.id));
-    });
+    if ($('#menuTable')) {
+      $('#menuTable').addEventListener('click', (e) => {
+        const btn = e.target.closest('.delete-btn');
+        if (!btn) return;
+        handleDeleteMenu(Number(btn.dataset.id));
+      });
+    }
 
     // Bottom nav
     $$('.nav-btn').forEach((btn) => {
