@@ -545,15 +545,13 @@
   }
 
   /* ---------------------------------------------------------
-     SERVICE WORKER
+     SERVICE WORKER (Langsung tanpa event listener ganda)
   --------------------------------------------------------- */
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch((err) => {
-          console.warn('Service worker registration failed:', err);
-        });
-      });
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker Berhasil Aktif!', reg))
+        .catch((err) => console.error('Service Worker Gagal:', err));
     }
   }
 
